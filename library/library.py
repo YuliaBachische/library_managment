@@ -81,18 +81,15 @@ class Library:
         self.save_books()
         print(f"Книга добавлена: {new_book.to_dict()}")
 
-    def is_valid_book_id(self, book_id: int) -> str:
+    def is_valid_book_id(self, book_id: int):
         """Проверяет, что ID книги является числом."""
         if not isinstance(book_id, int):
-            return "Ошибка: ID книги должен быть числом."
-        return ""
+            print("Ошибка: ID книги должен быть числом.")
+            return
 
     def remove_book(self, book_id: int):
         """Удаляет книгу из библиотеки по её ID."""
-        error_message = self.is_valid_book_id(book_id)
-        if error_message:
-            print(error_message)
-            return
+        self.is_valid_book_id(book_id)
         for book in self.books:
             if book.id == book_id:
                 self.books.remove(book)
@@ -115,6 +112,9 @@ class Library:
             else:
                 results = [book for book in results if getattr(book, key) is None]
 
+        if not results:
+            print("Книга с заданными параметрами не найдена.")
+
         return results
 
     def display_books(self):
@@ -128,10 +128,7 @@ class Library:
 
     def update_status(self, book_id: int, new_status: str):
         """Обновляет статус книги по её ID."""
-        error_message = self.is_valid_book_id(book_id)
-        if error_message:
-            print(error_message)
-            return
+        self.is_valid_book_id(book_id)
         for book in self.books:
             if book.id == book_id:
                 if new_status in ["в наличии", "выдана"]:
