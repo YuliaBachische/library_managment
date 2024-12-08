@@ -1,11 +1,18 @@
 from library.library import Library
+from handlers import (handle_add_book, handle_remove_book, handle_search_books, handle_display_books,
+                      handle_update_status)
 
 
 def main():
-    """
-    Главная функция для взаимодействия с пользователем и выполнения команд управления библиотекой.
-    """
     library = Library("library.json")
+
+    commands = {
+        "1": handle_add_book,
+        "2": handle_remove_book,
+        "3": handle_search_books,
+        "4": handle_display_books,
+        "5": handle_update_status,
+    }
 
     while True:
         print("\nДоступные команды:")
@@ -18,55 +25,11 @@ def main():
 
         command = input("Введите номер команды: ").strip()
 
-        if command == "1":
-            title = input("Введите название книги: ").strip()
-            author = input("Введите автора книги: ").strip()
-            year_input = input("Введите год издания книги: ").strip()
-
-            if year_input.isdigit():
-                year = int(year_input)
-            else:
-                year = year_input
-
-            library.add_book(title, author, year)
-
-        elif command == "2":
-            book_id_input = input("Введите ID книги для удаления: ").strip()
-            if book_id_input.isdigit():
-                book_id = int(book_id_input)
-            else:
-                book_id = book_id_input
-            library.remove_book(book_id)
-
-        elif command == "3":
-            print("Введите критерии поиска (оставьте поле пустым, если не используется):")
-            title = input("Название: ").strip() or None
-            author = input("Автор: ").strip() or None
-            year = input("Год: ").strip() or None
-
-            criteria = {key: value for key, value in {"title": title, "author": author, "year": year}.items() if value}
-            results = library.search_books(**criteria)
-
-            if results:
-                for book in results:
-                    print(book.to_dict())
-
-        elif command == "4":
-            library.display_books()
-
-        elif command == "5":
-            book_id_input = input("Введите ID книги: ")
-            if book_id_input.isdigit():
-                book_id = int(book_id_input)
-            else:
-                book_id = book_id_input
-            new_status = input("Введите новый статус ('в наличии' или 'выдана'): ").strip().lower()
-            library.update_status(book_id, new_status)
-
-        elif command == "6":
+        if command == "6":
             print("Выход из программы.")
             break
-
+        elif command in commands:
+            commands[command](library)
         else:
             print("Неверная команда. Попробуйте снова.")
 

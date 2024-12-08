@@ -1,6 +1,7 @@
 import json
-from datetime import datetime
-from typing import List
+from typing import List, Optional
+
+from validators import validate_book_data, validate_status
 from .book import Book
 
 
@@ -9,6 +10,7 @@ class Library:
     Управляет коллекцией книг в библиотеке.
 
     """
+
     def __init__(self, data_file: str):
         """
         Инициализирует библиотеку с указанным файлом данных.
@@ -33,112 +35,71 @@ class Library:
         with open(self.data_file, "w", encoding="utf-8") as file:
             json.dump([book.to_dict() for book in self.books], file, ensure_ascii=False, indent=4)
 
-    def validate_book_data(self, title: str, author: str, year: int) -> str:
-        """
-        Проверяет данные книги на корректность.
+    def get_book_by_id(self, book_id: int) -> Optional[Book]:
+        """Возвращает книгу по её ID или None, если книга не найдена."""
+        return next((book for book in self.books if book.id == book_id), None)
 
-        Возвращает строку с описанием ошибки, если данные некорректны,
-        или None, если все проверки пройдены.
-        """
-        if not title.strip() and not author.strip() and not year:
-            return "Укажите название книги, автора и год издания."
-
-        if not title.strip() or not author.strip() or not year:
-            return "Все поля (название, автор, год) должны быть заполнены."
-
-        current_year = datetime.now().year
-
-        if not isinstance(year, int) or year <= 0 or year < 1000 or year > current_year:
-            return "Год издания должен быть 4-значным положительным числом и не превышать текущий год."
-
-        if len(title) < 2 or len(title) > 200:
-            return "Название книги должно содержать от 2 до 200 символов."
-
-        if len(author) < 2 or len(author) > 100:
-            return "Имя автора должно содержать от 2 до 100 символов."
-
-        if any(char.isdigit() for char in author):
-            return "Имя автора не должно содержать цифры."
-
-        invalid_chars = set("!@#$%^&*()_+=[]{}|;:'\",<>?/\\")
-        if any(char in invalid_chars for char in title) or any(char in invalid_chars for char in author):
-            return "Название книги или имя автора содержит недопустимые символы."
-
-        if any(book.title.lower() == title.lower() and book.author.lower() == author.lower() for book in self.books):
-            return "Книга с таким названием и автором уже существует в библиотеке."
-
-        return None
-
-    def add_book(self, title: str, author: str, year: int):
+    def add_book(self, title: str, author: str, year: int) -> Optional[str]:
         """Добавляет новую книгу в библиотеку, если данные корректны."""
-        validation_error = self.validate_book_data(title, author, year)
+        validation_error = validate_book_data(title, author, year, self.books)
         if validation_error:
-            print(validation_error)
-            return
+            return validation_error
         new_id = max((book.id for book in self.books), default=0) + 1
         new_book = Book(new_id, title, author, year)
         self.books.append(new_book)
         self.save_books()
-        print(f"Книга добавлена: {new_book.to_dict()}")
+        return None
 
-    def is_valid_book_id(self, book_id: int):
+    def validate_book_id(self, book_id: int) -> Optional[str]:
         """Проверяет, что ID книги является числом."""
         if not isinstance(book_id, int):
-            print("Ошибка: ID книги должен быть числом.")
-            return
+            return "Ошибка: ID книги должен быть положительным числом."
+        if book_id > max((book.id for book in self.books), default=0):
+            return "Ошибка: книги с заданным ID не существует."
+        return None
 
-    def remove_book(self, book_id: int):
-        """Удаляет книгу из библиотеки по её ID."""
-        self.is_valid_book_id(book_id)
-        for book in self.books:
-            if book.id == book_id:
-                self.books.remove(book)
-                self.save_books()
-                print(f"Книга с id {book_id} удалена.")
-                return
-        print(f"Книга с id {book_id} не найдена.")
+    def remove_book(self, book_id: int) -> Optional[str]:
+        """Удаляет книгу из библиотеки по её ID. Возвращает True, если удаление успешно, иначе False."""
+        validation_error = self.validate_book_id(book_id)
+        if validation_error:
+            return validation_error
+        else:
+            book = self.get_book_by_id(book_id)
+            self.books.remove(book)
+            self.save_books()
+            return None
 
     def search_books(self, **criteria) -> List[Book]:
         """Ищет книги, соответствующие заданным критериям."""
         if not any(criteria.values()):
-            print("Поиск невозможен. Укажите хотя бы один критерий.")
             return []
 
         results = self.books
         for key, value in criteria.items():
-            # Преобразуем значение к строке и сравниваем в нижнем регистре
-            if value is not None:  # Проверка, что значение не None
+            if value is not None:
                 results = [book for book in results if str(getattr(book, key)).lower() == str(value).lower()]
-            else:
-                results = [book for book in results if getattr(book, key) is None]
-
-        if not results:
-            print("Книга с заданными параметрами не найдена.")
 
         return results
+
+    def update_status(self, book_id: int, new_status: str) -> Optional[str]:
+        """Обновляет статус книги по её ID. Возвращает True, если обновление успешно, иначе False."""
+        validation_error = self.validate_book_id(book_id)
+        if validation_error:
+            return validation_error
+        else:
+            book = self.get_book_by_id(book_id)
+            status_error = validate_status(new_status)
+            if status_error:
+                return status_error
+            else:
+                book.status = new_status
+                self.save_books()
+                return None
 
     def display_books(self):
         """Отображает все книги в библиотеке."""
         if not self.books:
-            print("Библиотека пуста.")
-            return
+            return []
         else:
             for book in self.books:
-                print(book.to_dict())
-
-    def update_status(self, book_id: int, new_status: str):
-        """Обновляет статус книги по её ID."""
-        self.is_valid_book_id(book_id)
-        for book in self.books:
-            if book.id == book_id:
-                if new_status in ["в наличии", "выдана"]:
-                    book.status = new_status
-                    self.save_books()
-                    print(f"Статус книги с id {book_id} обновлен на '{new_status}'.")
-                else:
-                    print("Некорректный статус. Используйте 'в наличии' или 'выдана'.")
-                return
-        print(f"Книга с id {book_id} не найдена.")
-
-
-
+                return book.to_dict()

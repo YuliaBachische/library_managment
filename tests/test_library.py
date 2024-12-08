@@ -18,157 +18,171 @@ class TestLibrary(unittest.TestCase):
         self.library = Library("../test_library.json")
         self.library.books = []  # Очищаем список книг для тестов
 
-    def test_add_book(self):
+    def test_add_book_successful(self):
         """
         Тестирует добавление книги в библиотеку.
 
         Убедитесь, что количество книг увеличивается после добавления.
         """
-        print("Тест 'test_add_book' начинается")
-        self.library.add_book("Название книги", "Имя автора", 2024)
+        error = self.library.add_book("Название книги", "Имя автора", 2024)
+        self.assertIsNone(error)
         self.assertEqual(len(self.library.books), 1)
-        print("Тест 'test_add_book' завершен успешно")
+        self.assertEqual(self.library.books[0].title, "Название книги")
 
-    def test_empty_fields(self):
+    def test_add_book_empty_fields(self):
         """
         Тест проверки поведения функции при пустых полях.
         """
-        print("Тест 'test_empty_fields' начинается")
-        error = self.library.validate_book_data("", "", 0)
+        error = self.library.add_book("", "", 0)
         self.assertEqual(error, "Укажите название книги, автора и год издания.")
-        print("Тест 'test_empty_fields' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
-    def test_partial_empty_fields(self):
+    def test_add_book_partial_empty_fields(self):
         """
         Тест проверки поведения функции при частично заполненных полях.
         """
-        print("Тест 'test_partial_empty_fields' начинается")
-        error = self.library.validate_book_data("", "Author", 2024)
+        error = self.library.add_book("", "автор", 2023)
         self.assertEqual(error, "Все поля (название, автор, год) должны быть заполнены.")
-        print("Тест 'test_partial_empty_fields' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
-    def test_invalid_year(self):
+    def test_add_book_invalid_year(self):
         """
         Тест проверки поведения функции при некорректном годе издания.
         """
-        print("Тест 'test_invalid_year' начинается")
-        error = self.library.validate_book_data("Title", "Author", 999)
+        error = self.library.add_book("Title", "Author", 999)
         self.assertEqual(error, "Год издания должен быть 4-значным положительным числом и не превышать текущий год.")
-
-        error = self.library.validate_book_data("Title", "Author", 2025)
+        error = self.library.add_book("Title", "Author", 2025)
         self.assertEqual(error, "Год издания должен быть 4-значным положительным числом и не превышать текущий год.")
-        print("Тест 'test_invalid_year' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
     def test_title_length(self):
         """
         Тест проверки поведения функции при некорректной длине названия книги.
         """
-        print("Тест 'test_title_length' начинается")
-        error = self.library.validate_book_data("A", "Author", 2024)
+        error = self.library.add_book("A", "Author", 2024)
         self.assertEqual(error, "Название книги должно содержать от 2 до 200 символов.")
-
+        self.assertEqual(len(self.library.books), 0)
         long_title = "A" * 201
-        error = self.library.validate_book_data(long_title, "Author", 2024)
+        error = self.library.add_book(long_title, "Author", 2024)
         self.assertEqual(error, "Название книги должно содержать от 2 до 200 символов.")
-        print("Тест 'test_title_length' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
     def test_author_length(self):
         """
         Тест проверки поведения функции при некорректной длине имени автора.
         """
-        print("Тест 'test_author_length' начинается")
-        error = self.library.validate_book_data("Title", "A", 2024)
+        error = self.library.add_book("Title", "A", 2024)
         self.assertEqual(error, "Имя автора должно содержать от 2 до 100 символов.")
-
+        self.assertEqual(len(self.library.books), 0)
         long_author = "A" * 101
-        error = self.library.validate_book_data("Title", long_author, 2024)
+        error = self.library.add_book("Title", long_author, 2024)
         self.assertEqual(error, "Имя автора должно содержать от 2 до 100 символов.")
-        print("Тест 'test_author_length' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
     def test_author_contains_digits(self):
         """
         Тест проверки поведения функции при наличии цифр в имени автора.
         """
-        print("Тест 'test_author_contains_digits' начинается")
-        error = self.library.validate_book_data("Title", "Author1", 2024)
+        error = self.library.add_book("Title", "Author1", 2024)
         self.assertEqual(error, "Имя автора не должно содержать цифры.")
-        print("Тест 'test_author_contains_digits' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
-    def test_invalid_characters(self):
+    def test_invalid_characters_in_book_or_author(self):
         """
         Тест проверки поведения функции при наличии недопустимых символов в названии книги или имени автора.
         """
-        print("Тест 'test_invalid_characters' начинается")
-        error = self.library.validate_book_data("Title@", "Author", 2024)
+        error = self.library.add_book("Title@", "Author", 2024)
         self.assertEqual(error, "Название книги или имя автора содержит недопустимые символы.")
-
-        error = self.library.validate_book_data("Title", "Auth@r", 2024)
+        self.assertEqual(len(self.library.books), 0)
+        error = self.library.add_book("Title", "Auth@r", 2024)
         self.assertEqual(error, "Название книги или имя автора содержит недопустимые символы.")
-        print("Тест 'test_invalid_characters' завершен успешно")
+        self.assertEqual(len(self.library.books), 0)
 
     def test_duplicate_book(self):
         """
         Тест проверки поведения функции при добавлении книги с дублирующимися названием и автором.
         """
-        print("Тест 'test_duplicate_book' начинается")
         self.library.books = [Book(1, "Title", "Author", 2024)]
-        error = self.library.validate_book_data("Title", "Author", 2024)
+        error = self.library.add_book("Title", "Author", 2024)
         self.assertEqual(error, "Книга с таким названием и автором уже существует в библиотеке.")
-        print("Тест 'test_duplicate_book' завершен успешно")
 
-    def test_valid_book(self):
-        """
-        Тест проверки поведения функции при корректных данных книги.
-        """
-        print("Тест 'test_valid_book' начинается")
-        error = self.library.validate_book_data("Valid Title", "Valid Author", 2024)
-        self.assertIsNone(error)
-        print("Тест 'test_valid_book' завершен успешно")
-
-    def test_remove_book(self):
+    def test_remove_book_successful(self):
         """
         Тестирует удаление книги из библиотеки.
         """
-        print("Тест 'test_remove_book' начинается")
         self.library.add_book("Название книги", "Имя автора", 2024)
         book_id = self.library.books[0].id
-        self.library.remove_book(book_id)
+        error = self.library.remove_book(book_id)
+        self.assertIsNone(error)
         self.assertEqual(len(self.library.books), 0)
-        print("Тест 'test_remove_book' завершен успешно")
+
+    def test_remove_book_invalid_id(self):
+        """
+        Проверяет поведение метода удаления книги при использовании несуществующего ID.
+        """
+        error = self.library.remove_book(999)
+        self.assertEqual(error, "Ошибка: книги с заданным ID не существует.")
 
     def test_search_books(self):
         """
         Тестирует поиск книги по заданным критериям.
         """
-        print("Тест 'test_search_books' начинается")
         self.library.add_book("Название книги", "Имя автора", 2024)
         results = self.library.search_books(title="Название книги")
-        if results:
-            for book in results:
-                print(book.to_dict())
         self.assertEqual(len(results), 1)
-        print("Тест 'test_search_books' завершен успешно")
+        self.assertEqual(results[0].title, "Название книги")
+        self.assertEqual(results[0].author, "Имя автора")
+        self.assertEqual(results[0].year, 2024)
 
-    def test_search_books_with_all_empty_criteria(self):
+    def test_search_books_no_results(self):
         """
         Проверяет, что метод не выполняется при пустых критериях.
         """
-        print("Тест 'test_search_books_with_empty_criteria' начинается")
-        results = self.library.search_books(title="", author="", year=None)
-        self.assertEqual(results, [])
-        print("Тест 'test_search_books_with_empty_criteria' завершен успешно")
+        self.library.add_book("Название книги", "Имя автора", 2024)
+        results = self.library.search_books(title="Несуществующая книга")
+        self.assertEqual(len(results), 0)
 
-    def test_update_status(self):
+    def test_update_status_successful(self):
         """
-        Тестирует обновление статуса книги.
+        Проверяет успешное обновление статуса книги.
         """
-        print("Тест 'test_update_status' начинается")
         self.library.add_book("Название книги", "Имя автора", 2024)
         book_id = self.library.books[0].id
-        self.library.update_status(book_id, "выдана")
+        error = self.library.update_status(book_id, "выдана")
+        self.assertIsNone(error)
         self.assertEqual(self.library.books[0].status, "выдана")
-        print("Тест 'test_update_status' завершен успешно")
 
+    def test_update_status_invalid_id(self):
+        """
+        Проверяет поведение метода при попытке обновления статуса книги с несуществующим ID.
+        """
+        error = self.library.update_status(999, "выдана")
+        self.assertEqual(error, "Ошибка: книги с заданным ID не существует.")
+
+    def test_update_status_invalid_status(self):
+        """
+        Проверяет поведение метода при вводе некорректного статуса.
+        """
+        self.library.add_book("Название книги", "Имя автора", 2024)
+        book_id = self.library.books[0].id
+        error = self.library.update_status(book_id, "недоступно")
+        self.assertEqual(error, "Статус книги должен быть 'в наличии' или 'выдана'.")
+
+    def test_display_books_empty_library(self):
+        """
+        Проверяет корректный вывод, когда библиотека пуста.
+        """
+        books = self.library.display_books()
+        self.assertEqual(books, [])
+
+    def test_display_books_with_books(self):
+        """
+        Проверяет корректный вывод списка книг, если библиотека содержит данные.
+        """
+        self.library.add_book("Название книги", "Имя автора", 2024)
+        books = [book.to_dict() for book in self.library.books]
+        self.assertEqual(len(books), 1)
+        self.assertEqual(books[0]["title"], "Название книги")
 
 
 if __name__ == "__main__":

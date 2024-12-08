@@ -11,20 +11,17 @@ class TestBook(unittest.TestCase):
         """
         Тест создания книги с использованием значения по умолчанию для статуса.
         """
-        print("Тест 'test_create_book_default_status' начинается")
         book = Book(2, "Другой заголовок", "Другой автор", 2021)
         self.assertEqual(book.id, 2)
         self.assertEqual(book.title, "Другой заголовок")
         self.assertEqual(book.author, "Другой автор")
         self.assertEqual(book.year, 2021)
         self.assertEqual(book.status, "в наличии")
-        print("Тест 'test_create_book_default_status' завершен успешно")
 
     def test_to_dict(self):
         """
         Тест метода to_dict, преобразующего объект книги в словарь.
         """
-        print("Тест 'test_to_dict' начинается")
         book = Book(3, "Заголовок", "Автор", 2019)
         expected_dict = {
             "id": 3,
@@ -34,13 +31,11 @@ class TestBook(unittest.TestCase):
             "status": "в наличии"
         }
         self.assertEqual(book.to_dict(), expected_dict)
-        print("Тест 'test_to_dict' завершен успешно")
 
     def test_from_dict(self):
         """
         Тест метода from_dict, создающего объект книги из словаря.
         """
-        print("Тест 'test_from_dict' начинается")
         data = {
             "id": 4,
             "title": "Словарь заголовок",
@@ -54,7 +49,6 @@ class TestBook(unittest.TestCase):
         self.assertEqual(book.author, "Словарь автор")
         self.assertEqual(book.year, 2020)
         self.assertEqual(book.status, "в наличии")
-        print("Тест 'test_from_dict' завершен успешно")
 
 
 if __name__ == "__main__":
