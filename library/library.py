@@ -35,9 +35,9 @@ class Library:
         with open(self.data_file, "w", encoding="utf-8") as file:
             json.dump([book.to_dict() for book in self.books], file, ensure_ascii=False, indent=4)
 
-    def get_book_by_id(self, book_id: int) -> Optional[Book]:
+    def get_book_by_id(self, book_id: int) -> Book:
         """Возвращает книгу по её ID или None, если книга не найдена."""
-        return next((book for book in self.books if book.id == book_id), None)
+        return next((book for book in self.books if book.id == book_id))
 
     def add_book(self, title: str, author: str, year: int) -> Optional[str]:
         """Добавляет новую книгу в библиотеку, если данные корректны."""
