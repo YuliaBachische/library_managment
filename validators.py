@@ -55,7 +55,7 @@ def validate_status(status: str) -> Optional[str]:
 
 
 def validate_book_id(book_id: int, books: List[Book]) -> Optional[str]:
-    """Проверяет, что ID книги является числом."""
+    """Проверяет, что ID книги является числом, есть ли книги в библиотеке и наличие ID в библиотеке."""
 
     if not isinstance(book_id, int):
         return "ID книги должен быть положительным числом."
