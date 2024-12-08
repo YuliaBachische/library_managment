@@ -36,7 +36,7 @@ class Library:
             json.dump([book.to_dict() for book in self.books], file, ensure_ascii=False, indent=4)
 
     def get_book_by_id(self, book_id: int) -> Book:
-        """Возвращает книгу по её ID или None, если книга не найдена."""
+        """Возвращает книгу по её ID."""
         return next((book for book in self.books if book.id == book_id))
 
     def add_book(self, title: str, author: str, year: int) -> Optional[str]:
@@ -51,7 +51,7 @@ class Library:
         return None
 
     def remove_book(self, book_id: int) -> Optional[str]:
-        """Удаляет книгу из библиотеки по её ID. Возвращает True, если удаление успешно, иначе False."""
+        """Удаляет книгу из библиотеки по её ID. Возвращает ошибку, если удаление не удалось"""
         validation_error = validate_book_id(book_id, self.books)
         if validation_error:
             return validation_error
@@ -74,7 +74,7 @@ class Library:
         return results
 
     def update_status(self, book_id: int, new_status: str) -> Optional[str]:
-        """Обновляет статус книги по её ID. Возвращает True, если обновление успешно, иначе False."""
+        """Обновляет статус книги по её ID. Возвращает ошибку, если обновление не удалось"""
         validation_error = validate_book_id(book_id, self.books)
         if validation_error:
             return validation_error
