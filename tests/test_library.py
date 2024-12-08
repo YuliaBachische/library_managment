@@ -120,8 +120,9 @@ class TestLibrary(unittest.TestCase):
         """
         Проверяет поведение метода удаления книги при использовании несуществующего ID.
         """
+        self.library.add_book("Название книги", "Имя автора", 2024)
         error = self.library.remove_book(999)
-        self.assertEqual(error, "Ошибка: книги с заданным ID не существует.")
+        self.assertEqual(error, "Книги с заданным ID не существует.")
 
     def test_search_books(self):
         """
@@ -156,8 +157,9 @@ class TestLibrary(unittest.TestCase):
         """
         Проверяет поведение метода при попытке обновления статуса книги с несуществующим ID.
         """
+        self.library.add_book("Название книги", "Имя автора", 2024)
         error = self.library.update_status(999, "выдана")
-        self.assertEqual(error, "Ошибка: книги с заданным ID не существует.")
+        self.assertEqual(error, "Книги с заданным ID не существует.")
 
     def test_update_status_invalid_status(self):
         """

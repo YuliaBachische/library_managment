@@ -34,8 +34,9 @@ def validate_book_data(title: str, author: str, year: int, books: List[Book]) ->
     if any(char in invalid_chars for char in title) or any(char in invalid_chars for char in author):
         return "Название книги или имя автора содержит недопустимые символы."
 
-    if any(book.title.lower() == title.lower() and book.author.lower() == author.lower() for book in books):
-        return "Книга с таким названием и автором уже существует в библиотеке."
+    if books:
+        if any(book.title.lower() == title.lower() and book.author.lower() == author.lower() for book in books):
+            return "Книга с таким названием и автором уже существует в библиотеке."
 
     return None
 
@@ -55,8 +56,12 @@ def validate_status(status: str) -> Optional[str]:
 
 def validate_book_id(book_id: int, books: List[Book]) -> Optional[str]:
     """Проверяет, что ID книги является числом."""
+
     if not isinstance(book_id, int):
-        return "Ошибка: ID книги должен быть положительным числом."
-    if book_id > max((book.id for book in books), default=0):
-        return "Ошибка: книги с заданным ID не существует."
+        return "ID книги должен быть положительным числом."
+    if not books:
+        return "Библиотека пуста."
+    existing_ids = sorted(book.id for book in books)
+    if book_id not in existing_ids:
+        return "Книги с заданным ID не существует."
     return None
