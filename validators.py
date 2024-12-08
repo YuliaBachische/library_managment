@@ -51,3 +51,12 @@ def validate_status(status: str) -> Optional[str]:
         return "Статус книги должен быть 'в наличии' или 'выдана'."
 
     return None
+
+
+def validate_book_id(book_id: int, books: List[Book]) -> Optional[str]:
+    """Проверяет, что ID книги является числом."""
+    if not isinstance(book_id, int):
+        return "Ошибка: ID книги должен быть положительным числом."
+    if book_id > max((book.id for book in books), default=0):
+        return "Ошибка: книги с заданным ID не существует."
+    return None

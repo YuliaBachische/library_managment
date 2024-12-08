@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional
 
-from validators import validate_book_data, validate_status
+from validators import validate_book_data, validate_status, validate_book_id
 from .book import Book
 
 
@@ -50,17 +50,9 @@ class Library:
         self.save_books()
         return None
 
-    def validate_book_id(self, book_id: int) -> Optional[str]:
-        """Проверяет, что ID книги является числом."""
-        if not isinstance(book_id, int):
-            return "Ошибка: ID книги должен быть положительным числом."
-        if book_id > max((book.id for book in self.books), default=0):
-            return "Ошибка: книги с заданным ID не существует."
-        return None
-
     def remove_book(self, book_id: int) -> Optional[str]:
         """Удаляет книгу из библиотеки по её ID. Возвращает True, если удаление успешно, иначе False."""
-        validation_error = self.validate_book_id(book_id)
+        validation_error = validate_book_id(book_id, self.books)
         if validation_error:
             return validation_error
         else:
@@ -83,7 +75,7 @@ class Library:
 
     def update_status(self, book_id: int, new_status: str) -> Optional[str]:
         """Обновляет статус книги по её ID. Возвращает True, если обновление успешно, иначе False."""
-        validation_error = self.validate_book_id(book_id)
+        validation_error = validate_book_id(book_id, self.books)
         if validation_error:
             return validation_error
         else:
